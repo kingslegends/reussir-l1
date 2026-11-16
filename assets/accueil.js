@@ -122,7 +122,6 @@
     const manque = [];
     if (nom.length < 3) manque.push("ton nom");
     if (tel.replace(/\D/g, "").length < 8) manque.push("ton numéro WhatsApp");
-    if (ref.length < 4) manque.push("la référence de la transaction");
     if (manque.length) {
       err.textContent = "Il manque " + manque.join(", ") + ".";
       err.hidden = false;
@@ -135,11 +134,11 @@
     const lignes = [
       "Bonjour, voici ma commande sur Réussir la L1 :",
       `• Produit : ${p.titre} (${RL1.prix(p.prix)})`,
-      `• Payé par : ${op} au ${op === "Flooz" ? config.flooz : config.tmoney}`,
-      `• Référence : ${ref}`,
+      `• Payé par : ${op}`,
       `• Nom : ${nom}`,
       `• WhatsApp : ${tel}`,
     ];
+    if (ref) lignes.push(`• Numéro qui a payé : ${ref}`);
     if (amb) lignes.push(`• Code ambassadeur : ${amb}`);
     const url = `https://wa.me/${config.whatsapp}?text=${encodeURIComponent(lignes.join("\n"))}`;
     window.location.href = url;

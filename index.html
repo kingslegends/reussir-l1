@@ -104,7 +104,7 @@
         <div class="numero"><span class="op tm">T-Money</span><b id="num-tm">92 14 69 95</b><button class="lien-btn" type="button" data-copie="num-tm">Copier</button></div>
         <div class="numero"><span class="op fl">Flooz</span><b id="num-fl">98 35 70 38</b><button class="lien-btn" type="button" data-copie="num-fl">Copier</button></div>
       </div>
-      <p class="note" style="margin-top:14px">Pour Flooz, le nom affiché à la confirmation est celui d'un compte familial : c'est normal. Garde le SMS de confirmation, il contient la référence de la transaction.</p>
+      <p class="note" style="margin-top:14px">Pour Flooz, le nom affiché à la confirmation est celui d'un compte familial : c'est normal. Tu peux payer par transfert ou par dépôt en espèces chez un agent.</p>
       <p class="note" style="margin-top:10px">Une question avant d'acheter ? Écris sur WhatsApp au <b>92 14 69 95</b>.</p>
     </div>
 
@@ -120,6 +120,7 @@
           <div class="radios">
             <label><input type="radio" name="op" value="T-Money" id="c-op-tm" checked> T-Money</label>
             <label><input type="radio" name="op" value="Flooz" id="c-op-fl"> Flooz</label>
+            <label><input type="radio" name="op" value="Dépôt chez un agent" id="c-op-ag"> Dépôt chez un agent</label>
           </div>
         </div>
         <label for="c-nom">Nom et prénom
@@ -128,8 +129,8 @@
         <label for="c-tel">Numéro WhatsApp
           <input id="c-tel" name="tel" type="tel" inputmode="tel" autocomplete="tel" required maxlength="20" placeholder="Ex. 90 12 34 56">
         </label>
-        <label for="c-ref">Référence de la transaction <span class="aide">Elle figure dans le SMS de confirmation du paiement.</span>
-          <input id="c-ref" name="ref" required maxlength="60" placeholder="Ex. 2511160012345">
+        <label for="c-ref">Numéro qui a envoyé l'argent <span class="aide">Facultatif : ton numéro, ou celui de l'agent si tu as fait un dépôt. Il aide à retrouver ton paiement.</span>
+          <input id="c-ref" name="ref" type="tel" inputmode="tel" maxlength="30" placeholder="Ex. 90 12 34 56">
         </label>
         <label for="c-amb">Code ambassadeur <span class="aide">Facultatif : le code de l'étudiant qui t'a conseillé le guide.</span>
           <input id="c-amb" name="amb" maxlength="20" autocapitalize="characters">
