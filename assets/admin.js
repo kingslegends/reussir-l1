@@ -54,9 +54,28 @@
     btn.disabled = true;
     btn.textContent = "Vérification…";
     try {
-      adminFichier = await RL1.chargerJSON("data/admin.json");
-      cleAdmin = await RL1.deriver($("#mdp").value, RL1.unb64(adminFichier.salt), adminFichier.iter);
-      secrets = await RL1.dechiffrerJSON(cleAdmin, adminFichier);
+      const mdp = $("#mdp").value;
+      try {
+        adminFichier = await RL1.chargerJSON("data/admin.json");
+        cleAdmin = await RL1.deriver(mdp, RL1.unb64(adminFichier.salt), adminFichier.iter);
+        secrets = await RL1.dechiffrerJSON(cleAdmin, adminFichier);
+      } catch (e) {
+        if (e.name !== "OperationError") throw e;
+        // mot de passe tout juste changé : le site peut garder l'ancien fichier
+        // quelques minutes ; on lit la version du dépôt GitHub.
+        try {
+          const r = await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/data/admin.json`,
+            { cache: "no-store", headers: { Accept: "application/vnd.github.raw+json" } });
+          if (!r.ok) throw e;
+          const frais = await r.json();
+          const cle = await RL1.deriver(mdp, RL1.unb64(frais.salt), frais.iter);
+          secrets = await RL1.dechiffrerJSON(cle, frais);
+          adminFichier = frais;
+          cleAdmin = cle;
+        } catch (e2) {
+          throw e; // c'est bien le mot de passe qui est faux
+        }
+      }
       $("#mdp").value = "";
       await chargerJeton();
       $("#vue-login").hidden = true;
@@ -185,6 +204,7 @@
         publie = true;
       } catch (e) {
         publie = false;
+        derniereVente.erreur = messageGitHub(e);
       }
       afficherResultat(publie);
       $("#form-vente").reset();
@@ -217,7 +237,7 @@
     $("#r-code").textContent = v.code;
     $("#r-etat").innerHTML = publie
       ? `<span class="succes">Code enregistré sur le site. Il fonctionne tout de suite.</span>`
-      : `<span class="erreur">Code pas encore enregistré sur le site.</span>`;
+      : `<span class="erreur">Code pas encore enregistré sur le site. ${E(v.erreur || "")}</span>`;
     $("#r-manuel").hidden = publie;
     $("#r-wa").href = `https://wa.me/${telWa(v.tel)}?text=${encodeURIComponent(messageClient(v))}`;
     $("#resultat").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -319,6 +339,13 @@
   });
 
   /* ---------- Réglages ---------- */
+  function messageGitHub(e) {
+    if (e.status === 0) return "Ajoute d'abord ton jeton GitHub (onglet Réglages).";
+    if (e.status === 401) return "Jeton refusé ou expiré : crée un nouveau jeton et colle-le dans Réglages.";
+    if (e.status === 403 || e.status === 404) return "Le jeton n'a pas le droit d'écrire. Sur GitHub, refais un jeton avec « Contents : Read and write » pour le dépôt reussir-l1.";
+    if (e.status === 409 || e.status === 422) return "Le fichier a changé entre-temps. Réessaie dans une minute.";
+    return `Échec de l'enregistrement${e.status ? ` (code ${e.status})` : " : vérifie ta connexion"}. Réessaie.`;
+  }
   $("#btn-oublier").addEventListener("click", () => {
     enregistrerJeton("");
     $("#g-token").value = "";
@@ -338,11 +365,16 @@
     etat.textContent = "Test en cours…";
     try {
       const depot = await gh.appel("");
-      etat.innerHTML = depot.permissions && depot.permissions.push === false
-        ? `<span class="erreur">Ce jeton peut lire mais pas écrire. Donne-lui l'autorisation « Contents : Read and write ».</span>`
-        : `<span class="succes">Connecté au dépôt ${E(depot.full_name)}. Les codes seront publiés automatiquement.</span>`;
+      // essai d'écriture réel : on réécrit le compteur à l'identique
+      let n = 0, sha;
+      try {
+        sha = (await gh.appel("/contents/data/compteur.json")).sha;
+        n = Number((await gh.lireBrut("data/compteur.json")).n) || 0;
+      } catch (e) { if (e.status !== 404) throw e; }
+      await gh.ecrire("data/compteur.json", { n }, "Test du jeton", sha);
+      etat.innerHTML = `<span class="succes">Connecté au dépôt ${E(depot.full_name)} : lecture et écriture OK. Les codes seront publiés automatiquement.</span>`;
     } catch (e) {
-      etat.innerHTML = `<span class="erreur">${e.status === 401 ? "Jeton invalide ou expiré." : e.status === 404 ? "Dépôt introuvable : vérifie le compte, le nom du dépôt et les droits du jeton." : "Test impossible : vérifie ta connexion."}</span>`;
+      etat.innerHTML = `<span class="erreur">${e.status === 404 && !gh.token ? "Dépôt introuvable." : messageGitHub(e)}</span>`;
     }
   });
 
@@ -362,9 +394,9 @@
       await gh.ecrire("data/admin.json", nouveau, "Nouveau mot de passe administrateur", actuel.sha);
       adminFichier = nouveau;
       $("#form-mdp").reset();
-      etat.innerHTML = `<span class="succes">Mot de passe changé. Il sera actif sur le site d'ici 2 minutes.</span>`;
+      etat.innerHTML = `<span class="succes">Mot de passe changé. Utilise-le dès maintenant. L'ancien cessera de marcher d'ici quelques minutes.</span>`;
     } catch (e) {
-      etat.innerHTML = `<span class="erreur">${e.status === 0 ? "Ajoute d'abord ton jeton GitHub ci-contre." : "Échec de l'enregistrement. Réessaie."}</span>`;
+      etat.innerHTML = `<span class="erreur">${messageGitHub(e)}</span>`;
     }
   });
 })();
