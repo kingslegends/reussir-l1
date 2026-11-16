@@ -203,11 +203,12 @@
 
   function largeurFeuille() {
     const dispo = $("#zone").clientWidth - 16;
-    return Math.min(dispo, 900) * zoom;
+    return dispo > 0 ? Math.min(dispo, 900) * zoom : 0; // 0 : zone pas encore affichée
   }
 
   function dimensionner() {
     const l = largeurFeuille();
+    if (!l) return;
     for (const f of feuilles) {
       f.div.style.width = `${l}px`;
       f.div.style.height = `${l * ratio}px`;
@@ -235,6 +236,7 @@
     }
     if (jeton !== f.jeton) return;
     const l = largeurFeuille();
+    if (!l) { f.rendue = false; return; }
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const vp = page.getViewport({ scale: (l * dpr) / page.getViewport({ scale: 1 }).width });
     const canvas = document.createElement("canvas");
@@ -341,12 +343,16 @@
   };
   $("#btn-plus").addEventListener("click", () => changerZoom(1.2));
   $("#btn-moins").addEventListener("click", () => changerZoom(1 / 1.2));
-  let attente;
-  window.addEventListener("resize", () => {
-    if (!pdf) return;
+  /* Redimensionne quand la zone de lecture change de largeur
+     (rotation du téléphone, fenêtre agrandie, zone affichée après coup). */
+  let attente, largeurVue = 0;
+  new ResizeObserver(() => {
+    const w = $("#zone").clientWidth;
+    if (!pdf || !observateur || w === largeurVue) return;
+    largeurVue = w;
     clearTimeout(attente);
-    attente = setTimeout(() => changerZoom(1), 250);
-  });
+    attente = setTimeout(() => changerZoom(1), 200);
+  }).observe($("#zone"));
   $("#btn-retour").addEventListener("click", () => {
     if (params.get("extrait")) { location.href = "./"; return; }
     fermerPDF();
