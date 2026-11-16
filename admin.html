@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Administration — Réussir la L1</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0f1d3a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230f1d3a'/%3E%3Ctext x='32' y='41' font-family='Georgia' font-weight='700' font-size='26' text-anchor='middle' fill='%23e0ad2a'%3EL1%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&family=Source+Serif+4:opsz,wght@8..60,700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .onglets { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 22px; }
+  .onglets button { border: 1.5px solid var(--ligne); background: var(--carte); color: var(--encre); border-radius: 999px; padding: 10px 16px; font: 600 .92rem var(--texte); cursor: pointer; min-height: 44px; }
+  .onglets button[aria-selected="true"] { background: var(--nuit); color: var(--sur-nuit); border-color: var(--nuit); }
+  .deux { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 600px) { .deux { grid-template-columns: 1fr; } }
+  .resultat { border: 2px solid var(--ok); }
+  .code-grand { font: 700 clamp(1.3rem, 5vw, 1.9rem) var(--mono); letter-spacing: .06em; padding: 14px; text-align: center; background: var(--papier); border-radius: 8px; user-select: all; word-break: break-all; }
+  .chiffres { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .chiffre { background: var(--carte); border: 1px solid var(--ligne); border-radius: 8px; padding: 14px 16px; }
+  .chiffre span { font-size: .82rem; color: var(--encre-douce); }
+  .chiffre b { display: block; font: 700 1.5rem var(--titre); font-variant-numeric: tabular-nums; }
+  .tableau { overflow-x: auto; background: var(--carte); border: 1px solid var(--ligne); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; min-width: 760px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--ligne); vertical-align: top; }
+  th { font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; color: var(--encre-douce); }
+  td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .btn-petit { border: 1.5px solid var(--alerte); color: var(--alerte); background: none; border-radius: 6px; padding: 4px 10px; font: 600 .8rem var(--texte); cursor: pointer; }
+  .actions-ligne { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  .etat { font-size: .9rem; }
+</style>
+</head>
+<body>
+<header class="barre">
+  <div class="enveloppe">
+    <a class="marque" href="./"><i>L1</i> Administration</a>
+    <nav aria-label="Menu"><a href="./">Voir le site</a></nav>
+  </div>
+</header>
+
+<main class="page enveloppe">
+  <section id="vue-login" class="etroit">
+    <p class="etiquette">Espace vendeur</p>
+    <h1 style="font-size:2rem;margin:8px 0 18px">Connexion</h1>
+    <form class="carte grille" id="form-login" novalidate>
+      <label for="mdp">Mot de passe administrateur
+        <input id="mdp" type="password" autocomplete="current-password" required>
+      </label>
+      <p class="erreur" id="login-erreur" role="alert" hidden></p>
+      <button class="bouton plein" type="submit" id="btn-login">Entrer</button>
+    </form>
+  </section>
+
+  <section id="vue-admin" hidden>
+    <div class="onglets" role="tablist">
+      <button type="button" role="tab" data-onglet="vente" aria-selected="true">Nouvelle vente</button>
+      <button type="button" role="tab" data-onglet="ventes" aria-selected="false">Ventes</button>
+      <button type="button" role="tab" data-onglet="reglages" aria-selected="false">Réglages</button>
+    </div>
+
+    <div data-panneau="vente">
+      <div class="commande">
+        <form class="carte grille" id="form-vente" novalidate>
+          <h2 style="font-size:1.4rem">Créer un code d'accès</h2>
+          <p class="note">À faire seulement après avoir vu l'argent arriver sur T-Money ou Flooz.</p>
+          <label for="v-produit">Produit <select id="v-produit"></select></label>
+          <div class="deux">
+            <label for="v-nom">Nom de l'acheteur <input id="v-nom" maxlength="60" required></label>
+            <label for="v-tel">Son WhatsApp <input id="v-tel" type="tel" inputmode="tel" maxlength="20" required></label>
+          </div>
+          <div class="deux">
+            <label for="v-prix">Montant reçu (F) <input id="v-prix" type="number" min="0" step="50" required></label>
+            <label for="v-op">Payé par <select id="v-op"><option>T-Money</option><option>Flooz</option><option>Espèces</option></select></label>
+          </div>
+          <div class="deux">
+            <label for="v-ref">Référence de la transaction <input id="v-ref" maxlength="60"></label>
+            <label for="v-amb">Code ambassadeur <input id="v-amb" maxlength="20" autocapitalize="characters"></label>
+          </div>
+          <p class="erreur" id="vente-erreur" role="alert" hidden></p>
+          <button class="bouton plein" type="submit" id="btn-vente">Créer le code</button>
+        </form>
+
+        <div class="carte resultat" id="resultat" hidden>
+          <p class="etiquette" style="color:var(--ok)">Code créé</p>
+          <h2 style="font-size:1.3rem;margin:6px 0 12px" id="r-titre"></h2>
+          <div class="code-grand" id="r-code"></div>
+          <p class="etat" id="r-etat" style="margin-top:12px"></p>
+          <div class="actions-ligne">
+            <a class="bouton" id="r-wa" href="#" target="_blank" rel="noopener">Envoyer sur WhatsApp</a>
+            <button class="bouton secondaire" type="button" id="r-copier">Copier le message</button>
+          </div>
+          <div id="r-manuel" hidden style="margin-top:14px">
+            <p class="note">Le code n'a pas pu être publié automatiquement. Télécharge le fichier puis ajoute-le dans le dossier <b>data/acces</b> de ton dépôt GitHub (bouton « Add file » puis « Upload files »).</p>
+            <button class="bouton secondaire" type="button" id="r-telecharger" style="margin-top:10px">Télécharger le fichier</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-panneau="ventes" hidden>
+      <div class="actions-ligne" style="margin:0 0 16px"><button class="bouton secondaire" type="button" id="btn-actualiser">Actualiser</button></div>
+      <p class="etat" id="ventes-etat"></p>
+      <div class="chiffres" id="chiffres"></div>
+      <div id="ambassadeurs"></div>
+      <div class="tableau"><table>
+        <thead><tr><th>N°</th><th>Date</th><th>Acheteur</th><th>Produit</th><th>Montant</th><th>Paiement</th><th>Ambassadeur</th><th></th></tr></thead>
+        <tbody id="ventes-corps"></tbody>
+      </table></div>
+    </div>
+
+    <div data-panneau="reglages" hidden>
+      <div class="commande">
+        <form class="carte grille" id="form-github" novalidate>
+          <h2 style="font-size:1.3rem">Connexion à GitHub</h2>
+          <p class="note">Le jeton permet au site d'enregistrer les codes tout seul. Il est gardé chiffré dans ce navigateur uniquement, et ne sert qu'une fois ton mot de passe saisi. N'enregistre-le que sur ton téléphone ou ton ordinateur personnel, et efface-le si tu utilises un autre appareil.</p>
+          <div class="deux">
+            <label for="g-owner">Compte GitHub <input id="g-owner" autocomplete="off"></label>
+            <label for="g-repo">Dépôt <input id="g-repo" autocomplete="off"></label>
+          </div>
+          <label for="g-token">Jeton d'accès (token) <input id="g-token" type="password" autocomplete="off" placeholder="github_pat_…"></label>
+          <p class="etat" id="g-etat" role="status"></p>
+          <button class="bouton plein" type="submit">Enregistrer et tester</button>
+          <button class="bouton secondaire plein" type="button" id="btn-oublier">Effacer le jeton de cet appareil</button>
+        </form>
+        <form class="carte grille" id="form-mdp" novalidate>
+          <h2 style="font-size:1.3rem">Changer le mot de passe</h2>
+          <label for="m-nouveau">Nouveau mot de passe <span class="aide">Au moins 10 caractères.</span><input id="m-nouveau" type="password" autocomplete="new-password"></label>
+          <label for="m-confirme">Confirmer <input id="m-confirme" type="password" autocomplete="new-password"></label>
+          <p class="etat" id="m-etat" role="status"></p>
+          <button class="bouton plein" type="submit">Changer le mot de passe</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="assets/commun.js"></script>
+<script src="assets/admin.js"></script>
+</body>
+</html>

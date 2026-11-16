@@ -1,0 +1,326 @@
+{
+ "produits": [
+  {
+   "id": "complet",
+   "titre": "Guide complet",
+   "prix": 5000,
+   "vedette": true,
+   "description": "Les 12 matières, les 31 examens corrigés et le projet intégrateur.",
+   "modules": [
+    "m01",
+    "m02",
+    "m03",
+    "m04",
+    "m05",
+    "m06",
+    "m07",
+    "m08",
+    "m09",
+    "m10",
+    "m11",
+    "m12",
+    "m13",
+    "m14",
+    "m15"
+   ]
+  },
+  {
+   "id": "pack-info",
+   "titre": "Pack Informatique",
+   "prix": 3000,
+   "description": "Algorithmique, C, Python et Bases de données : le cœur de la L1.",
+   "modules": [
+    "m01",
+    "m02",
+    "m03",
+    "m04",
+    "m05",
+    "m15"
+   ]
+  },
+  {
+   "id": "m02",
+   "titre": "Algorithmique",
+   "prix": 1000,
+   "modules": [
+    "m01",
+    "m02",
+    "m15"
+   ]
+  },
+  {
+   "id": "m03",
+   "titre": "Langage C",
+   "prix": 1000,
+   "modules": [
+    "m01",
+    "m03",
+    "m15"
+   ]
+  },
+  {
+   "id": "m04",
+   "titre": "Python",
+   "prix": 1000,
+   "modules": [
+    "m01",
+    "m04",
+    "m15"
+   ]
+  },
+  {
+   "id": "m05",
+   "titre": "Bases de données",
+   "prix": 1500,
+   "modules": [
+    "m01",
+    "m05",
+    "m15"
+   ]
+  },
+  {
+   "id": "m06",
+   "titre": "Réseaux",
+   "prix": 1000,
+   "modules": [
+    "m01",
+    "m06",
+    "m15"
+   ]
+  },
+  {
+   "id": "m07",
+   "titre": "Linux",
+   "prix": 1000,
+   "modules": [
+    "m01",
+    "m07",
+    "m15"
+   ]
+  },
+  {
+   "id": "m08",
+   "titre": "Web",
+   "prix": 1000,
+   "modules": [
+    "m01",
+    "m08",
+    "m15"
+   ]
+  },
+  {
+   "id": "m09",
+   "titre": "Architecture des ordinateurs",
+   "prix": 1000,
+   "modules": [
+    "m01",
+    "m09",
+    "m15"
+   ]
+  },
+  {
+   "id": "m10",
+   "titre": "Mathématiques",
+   "prix": 1000,
+   "modules": [
+    "m01",
+    "m10",
+    "m15"
+   ]
+  },
+  {
+   "id": "m11",
+   "titre": "Physique : électricité et électronique",
+   "prix": 1000,
+   "modules": [
+    "m01",
+    "m11",
+    "m15"
+   ]
+  },
+  {
+   "id": "m12",
+   "titre": "Droit du numérique",
+   "prix": 1000,
+   "modules": [
+    "m01",
+    "m12",
+    "m15"
+   ]
+  },
+  {
+   "id": "m13",
+   "titre": "Anglais pour l'informatique",
+   "prix": 1000,
+   "modules": [
+    "m01",
+    "m13",
+    "m15"
+   ]
+  },
+  {
+   "id": "m14",
+   "titre": "Corrigés des examens",
+   "prix": 1000,
+   "modules": [
+    "m01",
+    "m14",
+    "m15"
+   ]
+  }
+ ],
+ "modules": [
+  {
+   "id": "m01",
+   "num": 1,
+   "titre": "Bien démarrer",
+   "accroche": "Méthode de travail, plan de la L1 et mode d'emploi du guide.",
+   "pages": 5,
+   "taille": 166826,
+   "bonus": true,
+   "vignette": "img/m01.webp"
+  },
+  {
+   "id": "m02",
+   "num": 2,
+   "titre": "Algorithmique",
+   "accroche": "Pseudo-code, boucles, tableaux, tris, récursivité, complexité.",
+   "pages": 91,
+   "taille": 3002746,
+   "bonus": false,
+   "vignette": "img/m02.webp"
+  },
+  {
+   "id": "m03",
+   "num": 3,
+   "titre": "Langage C",
+   "accroche": "Pointeurs, mémoire, structures, fichiers, compilation avec gcc.",
+   "pages": 123,
+   "taille": 3660288,
+   "bonus": false,
+   "vignette": "img/m03.webp"
+  },
+  {
+   "id": "m04",
+   "num": 4,
+   "titre": "Python",
+   "accroche": "Du premier script aux fichiers, classes et bibliothèques.",
+   "pages": 127,
+   "taille": 3533880,
+   "bonus": false,
+   "vignette": "img/m04.webp"
+  },
+  {
+   "id": "m05",
+   "num": 5,
+   "titre": "Bases de données",
+   "accroche": "Modèle entité-association, SQL complet, MySQL, PHP.",
+   "pages": 260,
+   "taille": 5658308,
+   "bonus": false,
+   "vignette": "img/m05.webp"
+  },
+  {
+   "id": "m06",
+   "num": 6,
+   "titre": "Réseaux",
+   "accroche": "Modèle OSI, adressage IP, sous-réseaux, routage, Packet Tracer.",
+   "pages": 105,
+   "taille": 2897458,
+   "bonus": false,
+   "vignette": "img/m06.webp"
+  },
+  {
+   "id": "m07",
+   "num": 7,
+   "titre": "Linux",
+   "accroche": "Terminal, fichiers, droits, processus, scripts shell.",
+   "pages": 104,
+   "taille": 2746545,
+   "bonus": false,
+   "vignette": "img/m07.webp"
+  },
+  {
+   "id": "m08",
+   "num": 8,
+   "titre": "Web",
+   "accroche": "HTML, CSS, JavaScript, formulaires et PHP côté serveur.",
+   "pages": 102,
+   "taille": 3460707,
+   "bonus": false,
+   "vignette": "img/m08.webp"
+  },
+  {
+   "id": "m09",
+   "num": 9,
+   "titre": "Architecture des ordinateurs",
+   "accroche": "Binaire, portes logiques, processeur, mémoire, caches.",
+   "pages": 76,
+   "taille": 2249542,
+   "bonus": false,
+   "vignette": "img/m09.webp"
+  },
+  {
+   "id": "m10",
+   "num": 10,
+   "titre": "Mathématiques",
+   "accroche": "Analyse, algèbre, logique, graphes et dénombrement.",
+   "pages": 84,
+   "taille": 2615507,
+   "bonus": false,
+   "vignette": "img/m10.webp"
+  },
+  {
+   "id": "m11",
+   "num": 11,
+   "titre": "Physique : électricité et électronique",
+   "accroche": "Circuits, signaux, composants, mesures.",
+   "pages": 80,
+   "taille": 2424510,
+   "bonus": false,
+   "vignette": "img/m11.webp"
+  },
+  {
+   "id": "m12",
+   "num": 12,
+   "titre": "Droit du numérique",
+   "accroche": "Données personnelles, cybercriminalité, propriété intellectuelle au Togo.",
+   "pages": 62,
+   "taille": 1699967,
+   "bonus": false,
+   "vignette": "img/m12.webp"
+  },
+  {
+   "id": "m13",
+   "num": 13,
+   "titre": "Anglais pour l'informatique",
+   "accroche": "Vocabulaire technique, lecture de documentation, rédaction.",
+   "pages": 63,
+   "taille": 1858575,
+   "bonus": false,
+   "vignette": "img/m13.webp"
+  },
+  {
+   "id": "m14",
+   "num": 14,
+   "titre": "Corrigés des examens",
+   "accroche": "Les 31 examens du guide, corrigés pas à pas.",
+   "pages": 84,
+   "taille": 2490279,
+   "bonus": false,
+   "vignette": "img/m14.webp"
+  },
+  {
+   "id": "m15",
+   "num": 15,
+   "titre": "Projet intégrateur",
+   "accroche": "Un projet complet qui relie toutes les matières.",
+   "pages": 4,
+   "taille": 156158,
+   "bonus": true,
+   "vignette": "img/m15.webp"
+  }
+ ],
+ "pages_total": 1370,
+ "extrait_pages": 50
+}

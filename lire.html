@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mon livre — Réussir la L1</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0f1d3a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230f1d3a'/%3E%3Ctext x='32' y='41' font-family='Georgia' font-weight='700' font-size='26' text-anchor='middle' fill='%23e0ad2a'%3EL1%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&family=Source+Serif+4:opsz,wght@8..60,700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .connexion h1 { font-size: clamp(1.8rem, 5vw, 2.4rem); margin: 10px 0 8px; }
+  .connexion .carte { margin-top: 22px; }
+  .code-input { font: 600 1.15rem var(--mono); letter-spacing: .08em; text-transform: uppercase; text-align: center; }
+  .case { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .case input { width: 20px; min-height: 0; height: 20px; }
+  .biblio-tete { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+  .biblio-tete h1 { font-size: clamp(1.6rem, 4.5vw, 2.2rem); }
+  .livres { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .livre { text-align: left; cursor: pointer; font: inherit; color: inherit; background: var(--carte); border: 1px solid var(--ligne); border-radius: var(--r); padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .livre:hover { border-color: var(--or-vif); }
+  .livre .apercu { aspect-ratio: 16/9; overflow: hidden; background: #fff; border-bottom: 1px solid var(--ligne); }
+  .livre .apercu img { width: 100%; }
+  .livre .corps { padding: 12px 14px 14px; display: grid; gap: 4px; }
+  .livre .num { font: 600 .74rem var(--mono); color: var(--or); }
+  .livre b { font-family: var(--titre); font-size: 1.05rem; }
+
+  /* Lecteur */
+  .lecteur { position: fixed; inset: 0; z-index: 40; background: #3a4255; display: flex; flex-direction: column; }
+  .lecteur[hidden] { display: none !important; }
+  .outils {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    background: var(--nuit); color: var(--sur-nuit);
+    padding: calc(8px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px));
+  }
+  .outils button, .outils input { background: rgba(255,255,255,.1); color: #fff; border: 0; border-radius: 8px; min-height: 40px; padding: 0 12px; font: 600 .9rem var(--texte); cursor: pointer; }
+  .outils input { width: 64px; text-align: center; cursor: text; min-height: 40px; padding: 0 6px; }
+  .outils .titre-livre { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .outils .pagin { display: flex; align-items: center; gap: 6px; font-size: .9rem; font-variant-numeric: tabular-nums; }
+  .zone { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; display: flex; }
+  .pages { margin: 0 auto; padding: 14px 8px 40px; display: grid; gap: 12px; justify-items: center; width: 100%; }
+  .feuille { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.35); position: relative; max-width: 100%; }
+  .feuille canvas { display: block; width: 100%; height: 100%; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+  .sommaire { position: absolute; z-index: 2; top: 0; bottom: 0; left: 0; width: min(340px, 88vw); background: var(--carte); color: var(--encre); overflow: auto; padding: 16px; box-shadow: 4px 0 20px rgba(0,0,0,.3); }
+  .sommaire[hidden] { display: none; }
+  .sommaire button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 8px 6px; font: 500 .92rem var(--texte); color: inherit; cursor: pointer; border-radius: 6px; }
+  .sommaire button:hover { background: var(--papier); }
+  .sommaire .n1 { font-weight: 700; }
+  .sommaire .n2 { padding-left: 16px; }
+  .sommaire .n3 { padding-left: 28px; font-weight: 600; font-size: .88rem; }
+  .sommaire .n4 { padding-left: 40px; font-weight: 400; font-size: .86rem; color: var(--encre-douce); }
+  .chargement { margin: auto; color: #e8ebf3; text-align: center; display: grid; gap: 12px; padding: 24px; }
+  .barre-prog { width: 240px; max-width: 70vw; height: 6px; border-radius: 6px; background: rgba(255,255,255,.15); overflow: hidden; }
+  .barre-prog i { display: block; height: 100%; width: 0; background: var(--or-vif); transition: width .2s; }
+  .corps-zone { position: relative; flex: 1; display: flex; min-height: 0; }
+  @media (max-width: 560px) {
+    .outils { flex-wrap: nowrap; gap: 6px; }
+    .outils .titre-livre { display: none; }
+    .outils .pagin { margin-left: auto; }
+    .outils button { padding: 0 10px; }
+    .outils input { width: 48px; }
+  }
+  @media print { body { display: none !important; } }
+</style>
+</head>
+<body>
+<header class="barre">
+  <div class="enveloppe">
+    <a class="marque" href="./"><i>L1</i> Réussir la L1</a>
+    <nav aria-label="Menu"><a href="./">Accueil</a><a href="./#commander" class="acces">Acheter</a></nav>
+  </div>
+</header>
+
+<main class="page enveloppe">
+  <section id="vue-connexion" class="connexion etroit" hidden>
+    <p class="etiquette">Mon livre</p>
+    <h1>Saisis ton code d'accès</h1>
+    <p class="note">Tu l'as reçu sur WhatsApp après ton paiement. Il ressemble à <b style="font-family:var(--mono)">L1-AB3K-7QXM-P2RT</b>.</p>
+    <form class="carte grille" id="form-code" novalidate>
+      <label for="code">Code d'accès
+        <input id="code" class="code-input" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" placeholder="L1-XXXX-XXXX-XXXX">
+      </label>
+      <label class="case" for="memo"><input type="checkbox" id="memo" checked> Rester connecté sur cet appareil</label>
+      <p class="erreur" id="code-erreur" role="alert" hidden></p>
+      <button class="bouton plein" type="submit" id="btn-ouvrir">Ouvrir mon livre</button>
+    </form>
+    <p class="note" style="margin-top:18px">Pas encore de code ? <a href="./#commander">Achète le guide</a> ou <a href="lire.html?extrait=1">lis l'extrait gratuit</a>.</p>
+  </section>
+
+  <section id="vue-biblio" hidden>
+    <div class="biblio-tete">
+      <div><p class="etiquette" id="biblio-num"></p><h1 id="biblio-titre">Ma bibliothèque</h1></div>
+      <button class="bouton secondaire" type="button" id="btn-deconnexion">Se déconnecter</button>
+    </div>
+    <div class="livres" id="livres"></div>
+    <p class="note" style="margin-top:22px">Les mises à jour apparaissent ici automatiquement. Ton nom figure sur chaque page : ce guide est à toi seul.</p>
+  </section>
+</main>
+
+<div class="lecteur" id="lecteur" hidden>
+  <div class="outils">
+    <button type="button" id="btn-retour" aria-label="Retour à la bibliothèque">← Retour</button>
+    <button type="button" id="btn-sommaire">Plan</button>
+    <span class="titre-livre" id="titre-livre"></span>
+    <span class="pagin"><input id="saut" inputmode="numeric" aria-label="Aller à la page"> / <span id="total-pages">0</span></span>
+    <button type="button" id="btn-moins" aria-label="Réduire">−</button>
+    <button type="button" id="btn-plus" aria-label="Agrandir">+</button>
+  </div>
+  <div class="corps-zone">
+    <nav class="sommaire" id="sommaire" hidden aria-label="Sommaire"></nav>
+    <div class="zone" id="zone">
+      <div class="chargement" id="chargement"><span id="charg-texte">Ouverture du livre…</span><div class="barre-prog"><i id="charg-barre"></i></div></div>
+      <div class="pages" id="pages" hidden></div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/vendor/pdf.min.js"></script>
+<script src="assets/commun.js"></script>
+<script src="assets/lecteur.js"></script>
+</body>
+</html>
