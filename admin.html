@@ -31,6 +31,15 @@
   .btn-petit { border: 1.5px solid var(--alerte); color: var(--alerte); background: none; border-radius: 6px; padding: 4px 10px; font: 600 .8rem var(--texte); cursor: pointer; }
   .actions-ligne { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
   .etat { font-size: .9rem; }
+  .choix-produits { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .choix-produits legend { font-weight: 600; font-size: .92rem; margin-bottom: 6px; padding: 0; }
+  .choix-produits legend .aide { display: block; font-weight: 400; color: var(--encre-douce); font-size: .84rem; }
+  #v-produits { display: grid; gap: 4px; max-height: 260px; overflow: auto; border: 1.5px solid var(--ligne); border-radius: 8px; padding: 6px; background: var(--papier); }
+  #v-produits label { display: flex; align-items: center; gap: 10px; font-weight: 500; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+  #v-produits label:hover { background: var(--carte); }
+  #v-produits input { width: 18px; height: 18px; min-height: 0; flex: none; }
+  #v-produits span { flex: 1; min-width: 0; }
+  #v-produits b { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 600; }
   textarea { font: 400 1rem var(--texte); padding: 12px 14px; border-radius: 8px; width: 100%; border: 1.5px solid var(--ligne); background: var(--papier); color: var(--encre); resize: vertical; }
   .case-ligne { display: flex; align-items: center; gap: 10px; font-weight: 500; }
   .case-ligne input { width: 20px; height: 20px; min-height: 0; }
@@ -75,7 +84,10 @@
         <form class="carte grille" id="form-vente" novalidate>
           <h2 style="font-size:1.4rem">Créer un code d'accès</h2>
           <p class="note">À faire seulement après avoir vu l'argent arriver sur T-Money ou Flooz.</p>
-          <label for="v-produit">Produit <select id="v-produit"></select></label>
+          <fieldset class="choix-produits">
+            <legend>Produits achetés <span class="aide">Coche tout ce que le client a payé : il recevra un seul code pour tout.</span></legend>
+            <div id="v-produits"></div>
+          </fieldset>
           <div class="deux">
             <label for="v-nom">Nom de l'acheteur <input id="v-nom" maxlength="60" required></label>
             <label for="v-tel">Son WhatsApp <input id="v-tel" type="tel" inputmode="tel" maxlength="20" required></label>

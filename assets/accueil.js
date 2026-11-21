@@ -109,24 +109,46 @@
     $("#documents").hidden = false;
   }
 
-  /* Formulaire */
+  /* Formulaire et panier : on peut commander plusieurs produits à la fois */
   const select = $("#c-produit");
-  select.innerHTML = enVente.map((p) =>
-    `<option value="${E(p.id)}">${E(p.titre)} — ${RL1.prix(p.prix)}</option>`).join("");
-  const majTotal = () => { $("#c-total").textContent = RL1.prix(produits[select.value].prix); };
-  select.addEventListener("change", majTotal);
+  const CLE_PANIER = "rl1-panier";
+  let panier = [];
+  try { panier = JSON.parse(RL1.stockage.lire(CLE_PANIER) || "[]").filter((id) => visible(id)); } catch (e) { panier = []; }
   const voulu = new URLSearchParams(location.search).get("produit");
-  if (voulu && visible(voulu)) select.value = voulu;
-  majTotal();
+  if (voulu && visible(voulu) && !panier.includes(voulu)) panier.push(voulu);
+
+  function majPanier() {
+    RL1.stockage.ecrire(CLE_PANIER, JSON.stringify(panier));
+    const total = panier.reduce((s, id) => s + (Number(produits[id].prix) || 0), 0);
+    $("#panier-liste").innerHTML = panier.length
+      ? panier.map((id) => `<div class="article"><span>${E(produits[id].titre)}</span><b>${RL1.prix(produits[id].prix)}</b><button type="button" data-retirer="${E(id)}" aria-label="Retirer ${E(produits[id].titre)} du panier">✕</button></div>`).join("")
+      : `<p class="note">Ton panier est vide : clique sur « Ajouter au panier » sous un guide, une matière ou un document.</p>`;
+    $("#c-total").textContent = panier.length ? RL1.prix(total) : "—";
+    $("#nb-panier").textContent = panier.length;
+    $("#pastille-panier").hidden = !panier.length;
+    const restants = enVente.filter((p) => !panier.includes(p.id));
+    select.innerHTML = `<option value="">${restants.length ? "Choisir dans la liste…" : "Tout est déjà dans ton panier"}</option>` +
+      restants.map((p) => `<option value="${E(p.id)}">${E(p.titre)} — ${RL1.prix(p.prix)}</option>`).join("");
+    document.querySelectorAll("[data-choisir]").forEach((b) => {
+      const dedans = panier.includes(b.dataset.choisir);
+      b.textContent = dedans ? "✓ Dans le panier" : (b.classList.contains("lien-btn") ? "Ajouter" : "Ajouter au panier");
+      b.classList.toggle("dans-panier", dedans);
+      b.setAttribute("aria-pressed", String(dedans));
+    });
+  }
+  const ajouter = (id) => { if (visible(id) && !panier.includes(id)) panier.push(id); majPanier(); };
+  const retirer = (id) => { panier = panier.filter((x) => x !== id); majPanier(); };
+  select.addEventListener("change", () => { if (select.value) ajouter(select.value); });
+  majPanier();
 
   document.addEventListener("click", (ev) => {
     const choix = ev.target.closest("[data-choisir]");
     if (choix) {
-      select.value = choix.dataset.choisir;
-      majTotal();
-      $("#commander").scrollIntoView({ behavior: "smooth" });
-      setTimeout(() => $("#c-nom").focus({ preventScroll: true }), 500);
+      const id = choix.dataset.choisir;
+      if (panier.includes(id)) retirer(id); else ajouter(id);
     }
+    const enlever = ev.target.closest("[data-retirer]");
+    if (enlever) retirer(enlever.dataset.retirer);
     const copie = ev.target.closest("[data-copie]");
     if (copie) {
       const texte = document.getElementById(copie.dataset.copie).textContent.replace(/\s/g, "");
@@ -143,6 +165,7 @@
     const ref = f.ref.value.trim();
     const err = $("#c-erreur");
     const manque = [];
+    if (!panier.length) manque.push("au moins un produit dans ton panier");
     if (nom.length < 3) manque.push("ton nom");
     if (tel.replace(/\D/g, "").length < 8) manque.push("ton numéro WhatsApp");
     if (manque.length) {
@@ -151,12 +174,13 @@
       return;
     }
     err.hidden = true;
-    const p = produits[select.value];
     const op = f.op.value;
     const amb = f.amb.value.trim().toUpperCase();
+    const total = panier.reduce((s, id) => s + (Number(produits[id].prix) || 0), 0);
     const lignes = [
       "Bonjour, voici ma commande sur Réussir la L1 :",
-      `• Produit : ${p.titre} (${RL1.prix(p.prix)})`,
+      ...panier.map((id) => `• ${produits[id].titre} : ${RL1.prix(produits[id].prix)}`),
+      `• Total : ${RL1.prix(total)}`,
       `• Payé par : ${op}`,
       `• Nom : ${nom}`,
       `• WhatsApp : ${tel}`,

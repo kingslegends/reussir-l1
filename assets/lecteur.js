@@ -103,6 +103,15 @@
 
   /* ---------- Lecteur ---------- */
   let pdf = null, zoom = 1, filigrane = null, observateur = null, ratio = 1.414;
+  /* Mémoire de lecture (dernière page, marque-pages), par exemplaire et par livre,
+     gardée sur cet appareil seulement. */
+  let cleLecture = null, dernierePage = 0, attenteSauvegarde;
+  const lireEtat = () => {
+    try { return JSON.parse(RL1.stockage.lire(cleLecture) || "{}"); } catch (e) { return {}; }
+  };
+  const ecrireEtat = (maj) => {
+    if (cleLecture) RL1.stockage.ecrire(cleLecture, JSON.stringify({ ...lireEtat(), ...maj }));
+  };
   const feuilles = [];
 
   async function telecharger(url, surProgres) {
@@ -135,6 +144,7 @@
 
   async function ouvrirModule(id) {
     const m = modules[id];
+    cleLecture = `rl1-lecture-${session.num}-${id}`;
     $("#titre-livre").textContent = m.titre;
     $("#lecteur").hidden = false;
     document.body.style.overflow = "hidden";
@@ -159,6 +169,7 @@
   }
 
   async function ouvrirExtrait() {
+    cleLecture = "rl1-lecture-extrait";
     $("#titre-livre").textContent = "Extrait gratuit";
     $("#btn-retour").textContent = "← Accueil";
     $("#lecteur").hidden = false;
@@ -208,6 +219,23 @@
     observateur = new IntersectionObserver(surVisibilite, { root: $("#zone"), rootMargin: "150% 0px" });
     feuilles.forEach((f) => observateur.observe(f.div));
     construireSommaire();
+    afficherMarques();
+    const etat = lireEtat();
+    dernierePage = 1;
+    if (etat.page > 1 && etat.page <= pdf.numPages) {
+      allerA(etat.page);
+      montrerToast(`Reprise à la page ${etat.page}`, "Revenir au début", () => allerA(1));
+    }
+  }
+
+  let attenteToast;
+  function montrerToast(texte, action, faire) {
+    $("#toast-texte").textContent = texte;
+    $("#toast-action").textContent = action;
+    $("#toast-action").onclick = () => { faire(); $("#toast").hidden = true; };
+    $("#toast").hidden = false;
+    clearTimeout(attenteToast);
+    attenteToast = setTimeout(() => { $("#toast").hidden = true; }, 7000);
   }
 
   function largeurFeuille() {
@@ -299,7 +327,13 @@
     let n = 1;
     for (const f of feuilles) { if (f.div.offsetTop <= milieu) n = Number(f.div.dataset.page); else break; }
     if (document.activeElement !== $("#saut")) $("#saut").value = n;
+    if (feuilles.length && n !== dernierePage) {
+      dernierePage = n;
+      clearTimeout(attenteSauvegarde);
+      attenteSauvegarde = setTimeout(() => ecrireEtat({ page: n }), 800);
+    }
   }
+  const pageCourante = () => parseInt($("#saut").value, 10) || 1;
 
   function allerA(n) {
     const f = feuilles[Math.max(1, Math.min(n, feuilles.length)) - 1];
@@ -327,6 +361,11 @@
   }
 
   function fermerPDF() {
+    rechercheJeton++;
+    textes.clear();
+    $("#resultats").innerHTML = "";
+    $("#recherche-etat").textContent = "";
+    $("#toast").hidden = true;
     if (observateur) observateur.disconnect();
     feuilles.forEach(liberer);
     if (pdf) pdf.destroy();
@@ -335,7 +374,13 @@
 
   $("#zone").addEventListener("scroll", () => requestAnimationFrame(majNumero), { passive: true });
   $("#saut").addEventListener("change", (e) => allerA(parseInt(e.target.value, 10) || 1));
-  $("#btn-sommaire").addEventListener("click", () => { $("#sommaire").hidden = !$("#sommaire").hidden; });
+  const basculer = (ouvrir, fermer) => {
+    $(ouvrir).hidden = !$(ouvrir).hidden;
+    $(fermer).hidden = true;
+    $("#btn-outils").setAttribute("aria-expanded", String(!$("#panneau-outils").hidden));
+  };
+  $("#btn-sommaire").addEventListener("click", () => basculer("#sommaire", "#panneau-outils"));
+  $("#btn-outils").addEventListener("click", () => basculer("#panneau-outils", "#sommaire"));
   $("#sommaire").addEventListener("click", (e) => {
     const b = e.target.closest("[data-page]");
     if (b) { allerA(Number(b.dataset.page)); $("#sommaire").hidden = true; }
@@ -352,6 +397,93 @@
   };
   $("#btn-plus").addEventListener("click", () => changerZoom(1.2));
   $("#btn-moins").addEventListener("click", () => changerZoom(1 / 1.2));
+  $("#btn-plus2").addEventListener("click", () => changerZoom(1.2));
+  $("#btn-moins2").addEventListener("click", () => changerZoom(1 / 1.2));
+
+  /* ---------- Outils : recherche, marque-pages, mode nuit, plein écran ---------- */
+  const textes = new Map();
+  let rechercheJeton = 0;
+  const plier = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+  async function rechercher(q) {
+    const etat = $("#recherche-etat");
+    const cible = plier(q.trim());
+    const jeton = ++rechercheJeton;
+    const doc = pdf;
+    $("#resultats").innerHTML = "";
+    if (cible.length < 2) { etat.textContent = "Tape au moins 2 lettres."; return; }
+    const trouves = [];
+    for (let i = 1; i <= doc.numPages; i++) {
+      if (jeton !== rechercheJeton || doc !== pdf) return; // nouvelle recherche ou livre fermé
+      let t = textes.get(i);
+      if (t === undefined) {
+        try {
+          const contenu = await (await doc.getPage(i)).getTextContent();
+          t = contenu.items.map((x) => x.str).join(" ").replace(/\s+/g, " ");
+        } catch (e) { t = ""; }
+        textes.set(i, t);
+      }
+      const pos = plier(t).indexOf(cible);
+      if (pos >= 0) trouves.push({ page: i, extrait: t.slice(Math.max(0, pos - 45), pos + cible.length + 45) });
+      if (i % 15 === 0) etat.textContent = `Recherche… page ${i} sur ${doc.numPages}`;
+      if (trouves.length >= 80) break;
+    }
+    etat.textContent = trouves.length
+      ? `${trouves.length >= 80 ? "Plus de 80" : trouves.length} page${trouves.length > 1 ? "s" : ""} trouvée${trouves.length > 1 ? "s" : ""}.`
+      : "Aucun résultat. Essaie un autre mot.";
+    $("#resultats").innerHTML = trouves.map((r) =>
+      `<button type="button" data-page="${r.page}">Page ${r.page}<small>…${E(r.extrait)}…</small></button>`).join("");
+  }
+  $("#form-recherche").addEventListener("submit", (e) => { e.preventDefault(); if (pdf) rechercher($("#q").value); });
+
+  function afficherMarques() {
+    const marques = lireEtat().marques || [];
+    $("#marques").innerHTML = marques.length
+      ? marques.map((p) => `<div class="marque"><button type="button" data-page="${p}">Page ${p}</button><button type="button" data-retirer="${p}" aria-label="Retirer le marque-page de la page ${p}">✕</button></div>`).join("")
+      : `<p class="note">Aucun marque-page pour l'instant.</p>`;
+  }
+  $("#btn-marquer").addEventListener("click", () => {
+    const p = pageCourante();
+    const marques = new Set(lireEtat().marques || []);
+    marques.add(p);
+    ecrireEtat({ marques: [...marques].sort((a, b) => a - b) });
+    afficherMarques();
+  });
+  $("#panneau-outils").addEventListener("click", (e) => {
+    const retirer = e.target.closest("[data-retirer]");
+    if (retirer) {
+      const p = Number(retirer.dataset.retirer);
+      ecrireEtat({ marques: (lireEtat().marques || []).filter((x) => x !== p) });
+      afficherMarques();
+      return;
+    }
+    const aller = e.target.closest("[data-page]");
+    if (aller) {
+      allerA(Number(aller.dataset.page));
+      if (window.innerWidth < 760) $("#panneau-outils").hidden = true; // sur téléphone, on libère l'écran
+    }
+  });
+
+  const appliquerNuit = (actif) => {
+    $("#lecteur").classList.toggle("nuit", actif);
+    $("#btn-nuit").setAttribute("aria-pressed", String(actif));
+  };
+  appliquerNuit(RL1.stockage.lire("rl1-nuit") === "1");
+  $("#btn-nuit").addEventListener("click", () => {
+    const actif = !$("#lecteur").classList.contains("nuit");
+    appliquerNuit(actif);
+    RL1.stockage.ecrire("rl1-nuit", actif ? "1" : "0");
+  });
+
+  if (!document.fullscreenEnabled) $("#btn-plein").hidden = true;
+  $("#btn-plein").addEventListener("click", () => {
+    const fin = () => {};
+    if (document.fullscreenElement) document.exitFullscreen().catch(fin);
+    else $("#lecteur").requestFullscreen().catch(fin);
+  });
+  document.addEventListener("fullscreenchange", () => {
+    $("#btn-plein").textContent = document.fullscreenElement ? "Quitter le plein écran" : "Plein écran";
+  });
   /* Redimensionne quand la zone de lecture change de largeur
      (rotation du téléphone, fenêtre agrandie, zone affichée après coup). */
   let attente, largeurVue = 0;
@@ -365,8 +497,10 @@
   $("#btn-retour").addEventListener("click", () => {
     if (params.get("extrait")) { location.href = "./"; return; }
     fermerPDF();
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     $("#lecteur").hidden = true;
     $("#sommaire").hidden = true;
+    $("#panneau-outils").hidden = true;
     document.body.style.overflow = "";
   });
   document.addEventListener("keydown", (e) => {

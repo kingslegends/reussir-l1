@@ -174,10 +174,12 @@
   });
 
   /* ---------- Nouvelle vente ---------- */
-  const majPrix = () => { $("#v-prix").value = produits[$("#v-produit").value].prix; };
-  $("#v-produit").addEventListener("change", majPrix);
+  /* Vente : un ou plusieurs produits, un seul code. */
+  const produitsCoches = () => [...document.querySelectorAll("#v-produits input:checked")].map((c) => produits[c.value]).filter(Boolean);
+  const majPrix = () => { $("#v-prix").value = produitsCoches().reduce((s, p) => s + (Number(p.prix) || 0), 0); };
+  $("#v-produits").addEventListener("change", majPrix);
   function remplirFormulaire() {
-    $("#v-produit").innerHTML = catalogue.produits.map((p) => `<option value="${E(p.id)}">${E(p.titre)} — ${RL1.prix(p.prix)}${p.masque ? " (masqué)" : ""}</option>`).join("");
+    $("#v-produits").innerHTML = catalogue.produits.map((p, i) => `<label for="vp-${i}"><input type="checkbox" id="vp-${i}" value="${E(p.id)}"><span>${E(p.titre)}${p.masque ? " (masqué)" : ""}</span><b>${RL1.prix(p.prix)}</b></label>`).join("");
     majPrix();
   }
 
@@ -215,6 +217,11 @@
     const nom = $("#v-nom").value.trim();
     const tel = $("#v-tel").value.trim();
     const prixRecu = Number($("#v-prix").value);
+    if (!produitsCoches().length) {
+      err.textContent = "Coche au moins un produit.";
+      err.hidden = false;
+      return;
+    }
     if (nom.length < 3 || tel.replace(/\D/g, "").length < 8 || !(prixRecu >= 0)) {
       err.textContent = "Renseigne le nom, le numéro WhatsApp (8 chiffres au moins) et le montant.";
       err.hidden = false;
@@ -224,7 +231,13 @@
     btn.disabled = true;
     btn.textContent = "Création…";
     try {
-      const p = produits[$("#v-produit").value];
+      const choisis = produitsCoches();
+      // un « produit » regroupant tout ce qui a été coché
+      const p = {
+        id: choisis.map((x) => x.id).join("+"),
+        titre: choisis.map((x) => x.titre).join(" + "),
+        modules: [...new Set(choisis.flatMap((x) => x.modules))],
+      };
       const num = await prochainNumero();
       const code = RL1.nouveauCode();
       const norm = RL1.normaliser(code);

@@ -212,6 +212,18 @@ input:focus, select:focus { border-color: var(--or-vif); outline: none; }
 .erreur { color: var(--alerte); font-size: .9rem; }
 .succes { color: var(--ok); font-size: .95rem; }
 
+/* Panier */
+.pastille-panier { background: rgba(255,255,255,.12); color: #fff !important; font-weight: 600; }
+.pastille-panier b { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; margin-left: 4px; border-radius: 999px; background: var(--or-vif); color: #1a1405; font-size: .8rem; font-variant-numeric: tabular-nums; }
+.label-panier { font-weight: 600; font-size: .92rem; margin-bottom: 6px; }
+.panier-liste { display: grid; gap: 6px; }
+.article { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1.5px solid var(--ligne); border-radius: 8px; background: var(--papier); }
+.article span { flex: 1; min-width: 0; font-weight: 500; }
+.article b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.article button { background: none; border: 0; color: var(--alerte); font: 600 1rem var(--texte); cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+.dans-panier { background: var(--ok) !important; color: #fff !important; box-shadow: none !important; }
+.lien-btn.dans-panier { background: none !important; color: var(--ok) !important; text-decoration: none; }
+
 /* FAQ */
 .faq { display: grid; gap: 10px; max-width: 780px; }
 .faq details { background: var(--carte); border: 1px solid var(--ligne); border-radius: 8px; padding: 4px 18px; }

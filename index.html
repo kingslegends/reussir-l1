@@ -23,6 +23,7 @@
       <a href="#offres" class="cache-mobile">Offres</a>
       <a href="#modules" class="cache-mobile">Matières</a>
       <a href="lire.html?extrait=1" class="cache-mobile">Extrait gratuit</a>
+      <a href="#commander" class="pastille-panier" id="pastille-panier" hidden>Panier <b id="nb-panier">0</b></a>
       <a href="lire.html" class="acces">Mon livre</a>
     </nav>
   </div>
@@ -98,7 +99,7 @@
       <h2>Ton livre en quelques minutes.</h2>
     </div>
     <div class="etapes">
-      <div class="etape"><h3>Choisis</h3><p>Le guide complet, un pack ou une matière.</p></div>
+      <div class="etape"><h3>Choisis</h3><p>Ajoute au panier le guide complet, un pack ou plusieurs matières.</p></div>
       <div class="etape"><h3>Paie</h3><p>Envoie le montant par T-Money ou Flooz au numéro indiqué.</p></div>
       <div class="etape"><h3>Envoie ta commande</h3><p>Remplis le formulaire : il prépare le message WhatsApp pour toi.</p></div>
       <div class="etape"><h3>Lis</h3><p>Tu reçois ton code personnel. Saisis-le dans « Mon livre ».</p></div>
@@ -123,8 +124,12 @@
       <p class="etiquette">2 · Commande</p>
       <h2 style="margin:8px 0 16px">Envoie ta commande</h2>
       <form class="grille" id="form-commande" novalidate>
-        <label for="c-produit">Ce que tu achètes
-          <select id="c-produit" name="produit" required></select>
+        <div>
+          <p class="label-panier">Ton panier</p>
+          <div class="panier-liste" id="panier-liste"></div>
+        </div>
+        <label for="c-produit">Ajouter un produit
+          <select id="c-produit" name="produit"></select>
         </label>
         <div>
           <p style="font-weight:600;font-size:.92rem;margin-bottom:6px">Tu as payé par</p>

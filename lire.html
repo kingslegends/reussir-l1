@@ -56,6 +56,23 @@
   .barre-prog { width: 240px; max-width: 70vw; height: 6px; border-radius: 6px; background: rgba(255,255,255,.15); overflow: hidden; }
   .barre-prog i { display: block; height: 100%; width: 0; background: var(--or-vif); transition: width .2s; }
   .corps-zone { position: relative; flex: 1; display: flex; min-height: 0; }
+  .panneau-droit { left: auto; right: 0; box-shadow: -4px 0 20px rgba(0,0,0,.3); display: grid; gap: 20px; align-content: start; }
+  .panneau-droit h3 { font-size: 1rem; margin-bottom: 8px; }
+  .ligne-outil { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ligne-outil input { flex: 1; min-width: 0; min-height: 42px; padding: 8px 12px; }
+  .ligne-outil button[type=submit], .bouton-outil { width: auto !important; display: inline-flex !important; align-items: center; background: var(--papier) !important; border: 1.5px solid var(--ligne) !important; border-radius: 8px !important; padding: 8px 12px !important; font-weight: 600 !important; }
+  .bouton-outil[aria-pressed="true"] { background: var(--or-vif) !important; color: #1a1405; border-color: var(--or-vif) !important; }
+  #resultats { max-height: 38vh; overflow: auto; border-radius: 6px; }
+  #resultats:empty { display: none; }
+  #resultats button small { display: block; color: var(--encre-douce); font-weight: 400; font-size: .82rem; }
+  #marques { display: grid; gap: 4px; margin-top: 8px; }
+  .marque { display: flex; align-items: center; gap: 6px; }
+  .marque button:first-child { flex: 1; }
+  .marque button:last-child { width: auto !important; color: var(--alerte) !important; }
+  .toast { position: absolute; z-index: 3; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--nuit); color: #fff; border-radius: 999px; padding: 8px 8px 8px 16px; display: flex; gap: 10px; align-items: center; box-shadow: 0 6px 20px rgba(0,0,0,.35); font-size: .9rem; max-width: calc(100% - 32px); }
+  .toast button { background: var(--or-vif); color: #1a1405; border: 0; border-radius: 999px; padding: 6px 12px; font: 600 .85rem var(--texte); cursor: pointer; white-space: nowrap; }
+  .lecteur.nuit { background: #121212; }
+  .lecteur.nuit .feuille { filter: invert(.9) hue-rotate(180deg); }
   .consigne { background: var(--carte); color: var(--encre); border-left: 4px solid var(--or-vif); border-radius: 8px; padding: 14px 16px; width: min(900px, 100%); display: grid; gap: 8px; }
   .consigne p { white-space: pre-line; color: var(--encre-douce); font-size: .95rem; }
   .consigne button { justify-self: start; background: var(--or-vif); color: #1a1405; border: 0; border-radius: 999px; padding: 8px 16px; font: 600 .9rem var(--texte); cursor: pointer; }
@@ -65,6 +82,7 @@
     .outils .pagin { margin-left: auto; }
     .outils button { padding: 0 10px; }
     .outils input { width: 48px; }
+    #btn-moins, #btn-plus { display: none; }
   }
   @media print { body { display: none !important; } }
 </style>
@@ -111,9 +129,38 @@
     <span class="pagin"><input id="saut" inputmode="numeric" aria-label="Aller à la page"> / <span id="total-pages">0</span></span>
     <button type="button" id="btn-moins" aria-label="Réduire">−</button>
     <button type="button" id="btn-plus" aria-label="Agrandir">+</button>
+    <button type="button" id="btn-outils" aria-expanded="false">Outils</button>
   </div>
   <div class="corps-zone">
     <nav class="sommaire" id="sommaire" hidden aria-label="Sommaire"></nav>
+    <aside class="sommaire panneau-droit" id="panneau-outils" hidden aria-label="Outils de lecture">
+      <section>
+        <h3>Rechercher dans le livre</h3>
+        <form id="form-recherche" class="ligne-outil" role="search">
+          <input id="q" type="search" placeholder="Un mot, une notion…" autocomplete="off" aria-label="Mot à chercher">
+          <button type="submit">Chercher</button>
+        </form>
+        <p class="note" id="recherche-etat" role="status"></p>
+        <div id="resultats"></div>
+      </section>
+      <section>
+        <h3>Marque-pages</h3>
+        <button type="button" class="bouton-outil" id="btn-marquer">Marquer cette page</button>
+        <div id="marques"><p class="note">Aucun marque-page pour l'instant.</p></div>
+      </section>
+      <section>
+        <h3>Affichage</h3>
+        <div class="ligne-outil">
+          <button type="button" class="bouton-outil" id="btn-nuit" aria-pressed="false">Mode nuit</button>
+          <button type="button" class="bouton-outil" id="btn-plein">Plein écran</button>
+        </div>
+        <div class="ligne-outil">
+          <button type="button" class="bouton-outil" id="btn-moins2" aria-label="Réduire">− Plus petit</button>
+          <button type="button" class="bouton-outil" id="btn-plus2" aria-label="Agrandir">+ Plus grand</button>
+        </div>
+      </section>
+    </aside>
+    <div class="toast" id="toast" hidden><span id="toast-texte"></span><button type="button" id="toast-action"></button></div>
     <div class="zone" id="zone">
       <div class="chargement" id="chargement"><span id="charg-texte">Ouverture du livre…</span><div class="barre-prog"><i id="charg-barre"></i></div></div>
       <div class="pages" id="pages" hidden></div>
