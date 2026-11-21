@@ -12,16 +12,21 @@
     $("#liste-offres").innerHTML = `<p class="erreur">Le catalogue n'a pas pu être chargé. Vérifie ta connexion puis recharge la page.</p>`;
     return;
   }
+  RL1.appliquerConfig(config);
   const modules = Object.fromEntries(catalogue.modules.map((m) => [m.id, m]));
   const produits = Object.fromEntries(catalogue.produits.map((p) => [p.id, p]));
   const pagesDe = (p) => p.modules.reduce((n, id) => n + (modules[id]?.pages || 0), 0);
 
   /* Offres */
-  const complet = produits["complet"];
-  const pack = produits["pack-info"];
-  const unitaires = catalogue.produits.filter((p) => p.modules.length <= 3);
-  const prixMin = Math.min(...unitaires.map((p) => p.prix));
-  $("#liste-offres").innerHTML = `
+  // un produit « masqué » depuis l'espace vendeur n'apparaît nulle part
+  const enVente = catalogue.produits.filter((p) => !p.masque);
+  const visible = (id) => enVente.find((p) => p.id === id);
+  const complet = visible("complet");
+  const pack = visible("pack-info");
+  const unitaires = enVente.filter((p) => p.type !== "document" && p.modules.length <= 3);
+  const documents = enVente.filter((p) => p.type === "document" && modules[p.id]);
+  const prixMin = unitaires.length ? Math.min(...unitaires.map((p) => p.prix)) : 0;
+  $("#liste-offres").innerHTML = (complet ? `
     <article class="offre vedette">
       <p class="etiquette">Le plus choisi</p>
       <h3>${E(complet.titre)}</h3>
@@ -33,7 +38,7 @@
         <li>Toutes les mises à jour gratuites</li>
       </ul>
       <button class="bouton" type="button" data-choisir="complet">Choisir le guide complet</button>
-    </article>
+    </article>` : "") + (pack ? `
     <article class="offre">
       <p class="etiquette">Pack</p>
       <h3>${E(pack.titre)}</h3>
@@ -44,7 +49,7 @@
         <li>Corrigés des examens de ces matières</li>
       </ul>
       <button class="bouton secondaire" type="button" data-choisir="pack-info">Choisir le pack</button>
-    </article>
+    </article>` : "") + (unitaires.length ? `
     <article class="offre">
       <p class="etiquette">À l'unité</p>
       <h3>Une matière</h3>
@@ -55,7 +60,7 @@
         <li>Idéal pour rattraper un module</li>
       </ul>
       <a class="bouton secondaire" href="#modules">Voir les matières</a>
-    </article>`;
+    </article>` : "");
 
   /* Rayonnage */
   const carteCorriges = unitaires.find((p) => p.id === "m14");
@@ -86,14 +91,32 @@
     $("#bandeau-corriges").hidden = false;
   }
 
+  /* Autres documents (ajoutés depuis l'espace vendeur) */
+  if (documents.length) {
+    $("#liste-documents").innerHTML = documents.map((p) => {
+      const m = modules[p.id];
+      return `<article class="module">
+        <div class="apercu"><img src="${E(m.vignette)}" alt="Page du document ${E(m.titre)}" loading="lazy" width="360" height="509"></div>
+        <div class="corps">
+          <span class="num">DOCUMENT · ${m.pages} PAGES</span>
+          <h3>${E(p.titre)}</h3>
+          <p>${E(m.accroche || p.description || "")}</p>
+          <div class="pied"><b>${p.prix ? RL1.prix(p.prix) : "Gratuit"}</b>
+            <button class="lien-btn" type="button" data-choisir="${E(p.id)}">Choisir</button></div>
+        </div>
+      </article>`;
+    }).join("");
+    $("#documents").hidden = false;
+  }
+
   /* Formulaire */
   const select = $("#c-produit");
-  select.innerHTML = catalogue.produits.map((p) =>
+  select.innerHTML = enVente.map((p) =>
     `<option value="${E(p.id)}">${E(p.titre)} — ${RL1.prix(p.prix)}</option>`).join("");
   const majTotal = () => { $("#c-total").textContent = RL1.prix(produits[select.value].prix); };
   select.addEventListener("change", majTotal);
   const voulu = new URLSearchParams(location.search).get("produit");
-  if (voulu && produits[voulu]) select.value = voulu;
+  if (voulu && visible(voulu)) select.value = voulu;
   majTotal();
 
   document.addEventListener("click", (ev) => {

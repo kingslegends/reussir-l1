@@ -89,7 +89,29 @@ const RL1 = (() => {
   const echapper = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-  return { b64, unb64, deriver, importer, chiffrerJSON, dechiffrerJSON,
+  /* Numéro affiché « 92 14 69 95 » à partir de n'importe quelle écriture. */
+  const formaterNumero = (n) => {
+    const d = String(n || "").replace(/\D/g, "").slice(-8);
+    return d.replace(/(\d{2})(?=\d)/g, "$1 ").trim();
+  };
+  /* Remplit la page avec les réglages modifiables depuis l'espace vendeur :
+     éléments data-cfg="tmoney|flooz|whatsapp" et liens data-cfg-wa. */
+  function appliquerConfig(cfg) {
+    document.querySelectorAll("[data-cfg]").forEach((el) => {
+      const cle = el.dataset.cfg;
+      if (cfg[cle]) el.textContent = formaterNumero(cfg[cle]);
+    });
+    document.querySelectorAll("[data-cfg-wa]").forEach((a) => {
+      if (cfg.whatsapp) a.href = `https://wa.me/${cfg.whatsapp}`;
+    });
+    const bandeau = document.getElementById("annonce");
+    if (bandeau) {
+      bandeau.hidden = !cfg.annonce;
+      if (cfg.annonce) bandeau.querySelector("p").textContent = cfg.annonce;
+    }
+  }
+
+  return { formaterNumero, appliquerConfig, b64, unb64, deriver, importer, chiffrerJSON, dechiffrerJSON,
     nouveauCode, normaliser, idDuCode, chargerJSON, config, prix, stockage,
     echapper, ITER_CODE };
 })();

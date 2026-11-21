@@ -56,6 +56,9 @@
   .barre-prog { width: 240px; max-width: 70vw; height: 6px; border-radius: 6px; background: rgba(255,255,255,.15); overflow: hidden; }
   .barre-prog i { display: block; height: 100%; width: 0; background: var(--or-vif); transition: width .2s; }
   .corps-zone { position: relative; flex: 1; display: flex; min-height: 0; }
+  .consigne { background: var(--carte); color: var(--encre); border-left: 4px solid var(--or-vif); border-radius: 8px; padding: 14px 16px; width: min(900px, 100%); display: grid; gap: 8px; }
+  .consigne p { white-space: pre-line; color: var(--encre-douce); font-size: .95rem; }
+  .consigne button { justify-self: start; background: var(--or-vif); color: #1a1405; border: 0; border-radius: 999px; padding: 8px 16px; font: 600 .9rem var(--texte); cursor: pointer; }
   @media (max-width: 560px) {
     .outils { flex-wrap: nowrap; gap: 6px; }
     .outils .titre-livre { display: none; }

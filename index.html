@@ -28,6 +28,7 @@
   </div>
 </header>
 
+<div class="annonce" id="annonce" hidden><div class="enveloppe"><p></p></div></div>
 <main>
 <section class="heros">
   <div class="enveloppe">
@@ -80,6 +81,16 @@
   </div>
 </section>
 
+<section class="bloc" id="documents" style="padding-top:0" hidden>
+  <div class="enveloppe">
+    <div class="entete-bloc">
+      <p class="etiquette">Autres documents</p>
+      <h2>Pour aller plus loin.</h2>
+    </div>
+    <div class="rayon" id="liste-documents"></div>
+  </div>
+</section>
+
 <section class="bloc" style="padding-top:0">
   <div class="enveloppe">
     <div class="entete-bloc">
@@ -101,11 +112,11 @@
       <p class="etiquette">1 · Paiement</p>
       <h2 style="margin:8px 0 16px">Envoie le montant</h2>
       <div class="numeros">
-        <div class="numero"><span class="op tm">T-Money</span><b id="num-tm">92 14 69 95</b><button class="lien-btn" type="button" data-copie="num-tm">Copier</button></div>
-        <div class="numero"><span class="op fl">Flooz</span><b id="num-fl">98 35 70 38</b><button class="lien-btn" type="button" data-copie="num-fl">Copier</button></div>
+        <div class="numero"><span class="op tm">T-Money</span><b id="num-tm" data-cfg="tmoney">92 14 69 95</b><button class="lien-btn" type="button" data-copie="num-tm">Copier</button></div>
+        <div class="numero"><span class="op fl">Flooz</span><b id="num-fl" data-cfg="flooz">98 35 70 38</b><button class="lien-btn" type="button" data-copie="num-fl">Copier</button></div>
       </div>
       <p class="note" style="margin-top:14px">Pour Flooz, le nom affiché à la confirmation est celui d'un compte familial : c'est normal. Tu peux payer par transfert ou par dépôt en espèces chez un agent.</p>
-      <p class="note" style="margin-top:10px">Une question avant d'acheter ? Écris sur WhatsApp au <b>92 14 69 95</b>.</p>
+      <p class="note" style="margin-top:10px">Une question avant d'acheter ? Écris sur WhatsApp au <b data-cfg="whatsapp">92 14 69 95</b>.</p>
     </div>
 
     <div class="carte">
@@ -170,7 +181,7 @@
   </div>
 </footer>
 
-<a class="wa" id="wa-flottant" href="https://wa.me/22892146995" target="_blank" rel="noopener" aria-label="Écrire sur WhatsApp">
+<a class="wa" id="wa-flottant" data-cfg-wa href="https://wa.me/22892146995" target="_blank" rel="noopener" aria-label="Écrire sur WhatsApp">
   <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3a13 13 0 0 0-11.2 19.6L3 29l6.6-1.7A13 13 0 1 0 16 3zm0 23.6c-2 0-4-.6-5.7-1.6l-.4-.2-3.9 1 1-3.8-.3-.4A10.6 10.6 0 1 1 16 26.6zm5.8-7.9c-.3-.2-1.9-.9-2.2-1-.3-.1-.5-.2-.7.2l-1 1.2c-.2.2-.4.2-.7.1a8.7 8.7 0 0 1-4.3-3.8c-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.5l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5 1.9.8 2.6.9 3.6.7.6-.1 1.9-.8 2.1-1.5.3-.7.3-1.3.2-1.5-.1-.1-.3-.2-.6-.4z"/></svg>
 </a>
 

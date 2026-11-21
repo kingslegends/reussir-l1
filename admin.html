@@ -31,6 +31,13 @@
   .btn-petit { border: 1.5px solid var(--alerte); color: var(--alerte); background: none; border-radius: 6px; padding: 4px 10px; font: 600 .8rem var(--texte); cursor: pointer; }
   .actions-ligne { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
   .etat { font-size: .9rem; }
+  textarea { font: 400 1rem var(--texte); padding: 12px 14px; border-radius: 8px; width: 100%; border: 1.5px solid var(--ligne); background: var(--papier); color: var(--encre); resize: vertical; }
+  .case-ligne { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .case-ligne input { width: 20px; height: 20px; min-height: 0; }
+  .table-produits input[type=number] { width: 110px; min-height: 40px; padding: 8px 10px; }
+  .table-produits input[type=checkbox] { width: 20px; height: 20px; min-height: 0; }
+  .type { font: 600 .74rem var(--texte); padding: 3px 8px; border-radius: 999px; background: var(--papier); border: 1px solid var(--ligne); white-space: nowrap; }
+  .btn-lien { background: none; border: 0; color: var(--or); font: 600 .85rem var(--texte); cursor: pointer; text-decoration: underline; padding: 4px 0; }
 </style>
 </head>
 <body>
@@ -58,6 +65,8 @@
     <div class="onglets" role="tablist">
       <button type="button" role="tab" data-onglet="vente" aria-selected="true">Nouvelle vente</button>
       <button type="button" role="tab" data-onglet="ventes" aria-selected="false">Ventes</button>
+      <button type="button" role="tab" data-onglet="catalogue" aria-selected="false">Catalogue</button>
+      <button type="button" role="tab" data-onglet="site" aria-selected="false">Site</button>
       <button type="button" role="tab" data-onglet="reglages" aria-selected="false">Réglages</button>
     </div>
 
@@ -101,7 +110,7 @@
     </div>
 
     <div data-panneau="ventes" hidden>
-      <div class="actions-ligne" style="margin:0 0 16px"><button class="bouton secondaire" type="button" id="btn-actualiser">Actualiser</button></div>
+      <div class="actions-ligne" style="margin:0 0 16px"><button class="bouton secondaire" type="button" id="btn-actualiser">Actualiser</button><button class="bouton secondaire" type="button" id="btn-export">Exporter pour Excel</button></div>
       <p class="etat" id="ventes-etat"></p>
       <div class="chiffres" id="chiffres"></div>
       <div id="ambassadeurs"></div>
@@ -109,6 +118,64 @@
         <thead><tr><th>N°</th><th>Date</th><th>Acheteur</th><th>Produit</th><th>Montant</th><th>Paiement</th><th>Ambassadeur</th><th></th></tr></thead>
         <tbody id="ventes-corps"></tbody>
       </table></div>
+    </div>
+
+    <div data-panneau="catalogue" hidden>
+      <section class="carte" style="margin-bottom:22px">
+        <h2 style="font-size:1.35rem">Produits en vente</h2>
+        <p class="note" style="margin:6px 0 14px">Change un prix ou masque un produit, puis clique sur « Enregistrer ». Les acheteurs gardent toujours l'accès à ce qu'ils ont payé, même si tu masques le produit.</p>
+        <div class="tableau"><table class="table-produits">
+          <thead><tr><th>Produit</th><th>Type</th><th>Prix (F)</th><th>En vente</th><th></th></tr></thead>
+          <tbody id="produits-corps"></tbody>
+        </table></div>
+        <p class="etat" id="produits-etat" role="status" style="margin-top:12px"></p>
+        <div class="actions-ligne"><button class="bouton" type="button" id="btn-produits">Enregistrer les changements</button></div>
+      </section>
+
+      <form class="carte grille" id="form-doc" novalidate>
+        <h2 style="font-size:1.35rem" id="doc-titre-form">Ajouter un document</h2>
+        <p class="note" id="doc-aide">Le document est chiffré sur ton appareil avant d'être envoyé : sur le site, personne ne peut l'ouvrir sans code. Laisse-le masqué tant que tu ne veux pas le vendre.</p>
+        <label for="d-fichier">Fichier PDF <span class="aide" id="d-fichier-aide">50 Mo au maximum.</span>
+          <input id="d-fichier" type="file" accept="application/pdf,.pdf">
+        </label>
+        <div class="deux">
+          <label for="d-titre">Titre <input id="d-titre" maxlength="80" placeholder="Ex. Annales corrigées de L2"></label>
+          <label for="d-prix">Prix (F) <input id="d-prix" type="number" min="0" step="50" value="1000"></label>
+        </div>
+        <label for="d-accroche">Description courte <span class="aide">Une phrase, affichée sur la page d'accueil.</span>
+          <input id="d-accroche" maxlength="160">
+        </label>
+        <label for="d-instructions">Message pour le lecteur <span class="aide">Facultatif : affiché en haut du document quand l'acheteur l'ouvre (conseils, ordre de lecture…).</span>
+          <textarea id="d-instructions" rows="4" maxlength="1500"></textarea>
+        </label>
+        <label class="case-ligne" for="d-visible"><input type="checkbox" id="d-visible"> Mettre en vente tout de suite (sinon il reste masqué)</label>
+        <p class="etat" id="doc-etat" role="status"></p>
+        <div class="actions-ligne">
+          <button class="bouton" type="submit" id="btn-doc">Publier le document</button>
+          <button class="bouton secondaire" type="button" id="btn-doc-annuler" hidden>Annuler la modification</button>
+        </div>
+      </form>
+    </div>
+
+    <div data-panneau="site" hidden>
+      <form class="carte grille" id="form-site" novalidate style="max-width:720px">
+        <h2 style="font-size:1.35rem">Informations du site</h2>
+        <p class="note">Ce que tu changes ici se met à jour partout sur le site : page d'accueil, formulaire de commande, bouton WhatsApp, conditions de vente.</p>
+        <div class="deux">
+          <label for="s-whatsapp">Numéro WhatsApp <span class="aide">Celui qui reçoit les commandes.</span><input id="s-whatsapp" type="tel" inputmode="tel" maxlength="20"></label>
+          <label for="s-commission">Commission ambassadeur (F) <span class="aide">Par vente apportée.</span><input id="s-commission" type="number" min="0" step="50"></label>
+        </div>
+        <div class="deux">
+          <label for="s-tmoney">Numéro T-Money <input id="s-tmoney" type="tel" inputmode="tel" maxlength="20"></label>
+          <label for="s-flooz">Numéro Flooz <input id="s-flooz" type="tel" inputmode="tel" maxlength="20"></label>
+        </div>
+        <label for="s-annonce">Annonce en haut du site <span class="aide">Facultatif. Exemple : « Prix de lancement jusqu'au 30 novembre ». Laisse vide pour ne rien afficher.</span>
+          <input id="s-annonce" maxlength="140">
+        </label>
+        <p class="etat" id="site-etat" role="status"></p>
+        <div class="actions-ligne"><button class="bouton" type="submit" id="btn-site">Enregistrer</button></div>
+        <p class="note">L'extrait gratuit (PDF) garde les numéros imprimés dessus : si tu changes de numéro, demande-moi de le refaire.</p>
+      </form>
     </div>
 
     <div data-panneau="reglages" hidden>
@@ -137,6 +204,7 @@
   </section>
 </main>
 
+<script src="assets/vendor/pdf.min.js"></script>
 <script src="assets/commun.js"></script>
 <script src="assets/admin.js"></script>
 </body>

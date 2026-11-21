@@ -62,7 +62,7 @@
       const m = modules[id];
       return `<button class="livre" type="button" data-livre="${E(id)}">
         <div class="apercu"><img src="${E(m.vignette)}" alt="" loading="lazy" width="360" height="509"></div>
-        <div class="corps"><span class="num">MODULE ${String(m.num).padStart(2, "0")} · ${m.pages} PAGES</span><b>${E(m.titre)}</b></div>
+        <div class="corps"><span class="num">${m.type === "document" ? "DOCUMENT" : `MODULE ${String(m.num).padStart(2, "0")}`} · ${m.pages} PAGES</span><b>${E(m.titre)}</b></div>
       </button>`;
     }).join("");
     afficher("biblio");
@@ -152,7 +152,7 @@
         diag: `${session.nom} · ${session.tel}`,
         pied: `Exemplaire personnel de ${session.nom} · n° ${no} · reproduction et partage interdits`,
       };
-      await afficherPDF(new Uint8Array(clair));
+      await afficherPDF(new Uint8Array(clair), m.instructions || "");
     } catch (e) {
       progression("Impossible d'ouvrir ce livre. Vérifie ta connexion et réessaie.", 0);
     }
@@ -174,7 +174,7 @@
     }
   }
 
-  async function afficherPDF(donnees) {
+  async function afficherPDF(donnees, consigne = "") {
     fermerPDF();
     pdf = await pdfjsLib.getDocument({ data: donnees, isEvalSupported: false }).promise;
     const p1 = await pdf.getPage(1);
@@ -183,6 +183,15 @@
     const conteneur = $("#pages");
     conteneur.innerHTML = "";
     feuilles.length = 0;
+    if (consigne) {
+      // message de l'auteur, affiché au-dessus de la première page
+      const note = document.createElement("aside");
+      note.className = "consigne";
+      note.innerHTML = `<b>À lire avant de commencer</b><p></p><button type="button">Compris</button>`;
+      note.querySelector("p").textContent = consigne;
+      note.querySelector("button").addEventListener("click", () => note.remove());
+      conteneur.appendChild(note);
+    }
     for (let i = 1; i <= pdf.numPages; i++) {
       const div = document.createElement("div");
       div.className = "feuille";

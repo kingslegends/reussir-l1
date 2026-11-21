@@ -93,6 +93,10 @@ body::before {
 .bouton.plein { width: 100%; }
 .bouton[disabled] { opacity: .55; cursor: not-allowed; transform: none; }
 
+/* Bandeau d'annonce (texte modifiable depuis l'espace vendeur) */
+.annonce { background: var(--or-vif); color: #1a1405; text-align: center; font-weight: 600; font-size: .95rem; }
+.annonce .enveloppe { padding-block: 10px; }
+
 /* Héros */
 .heros { background: var(--nuit); color: var(--sur-nuit); overflow: hidden; position: relative; }
 .heros::after {
